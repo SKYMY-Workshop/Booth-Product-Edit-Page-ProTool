@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="header">
+    <h1>Product Edit Page ProTool for BOOTH</h1>
+  </div>
+  <div id="content">
+    <div id="error" class="hidden">
+      <p>この拡張機能はBoothの商品編集ページ<br>(<code>manage.booth.pm/items/*/edit</code>)<br>でのみ使用できます。</p>
+    </div>
+
+    <!-- 表示設定 -->
+    <div id="help-toggle-section" class="hidden section island island-settings">
+      <div class="island-title">表示設定</div>
+      <div class="toggle-row">
+        <span class="toggle-label">ヘルプ文を非表示にする</span>
+        <button id="helpToggleBtn" class="toggle-switch" data-active="false">
+          <span class="toggle-knob"></span>
+        </button>
+      </div>
+      <div id="default-collapse-row" class="toggle-row">
+        <span class="toggle-label">デフォルトですべて折りたたむ</span>
+        <button id="defaultCollapseToggleBtn" class="toggle-switch" data-active="false">
+          <span class="toggle-knob"></span>
+        </button>
+      </div>
+      <div id="recommend-tag-row" class="toggle-row">
+        <span class="toggle-label">おすすめタグを非表示にする</span>
+        <button id="recommendTagToggleBtn" class="toggle-switch" data-active="false">
+          <span class="toggle-knob"></span>
+        </button>
+      </div>
+      <div id="purchase-limit-row" class="toggle-row">
+        <span class="toggle-label">限定販売数を非表示にする</span>
+        <button id="purchaseLimitToggleBtn" class="toggle-switch" data-active="false">
+          <span class="toggle-knob"></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 価格一括変更 -->
+    <div id="price-section" class="hidden section island island-price">
+      <div class="island-title">価格の一括変更</div>
+      <div id="loading">読み込み中...</div>
+      <div id="variations"></div>
+      <div id="actions" class="hidden">
+        <button id="applyBtn">適用</button>
+      </div>
+      <div id="no-variations" class="hidden">
+        <p class="no-data">バリエーションが見つかりませんでした。</p>
+      </div>
+    </div>
+
+    <!-- バリエーション並び替え -->
+    <div id="sort-section" class="hidden section island island-sort">
+      <div class="island-title">バリエーションの並び替え</div>
+      <div id="sort-status-box" class="sort-status-box">読み込み中...</div>
+      <div id="sort-preview" class="sort-preview"></div>
+      <button id="sort-btn" class="sort-btn-primary" disabled>バリエーションをアルファベット順に並べ替え</button>
+      <button id="sort-cancel-btn" class="sort-btn-danger" style="display:none">キャンセル</button>
+    </div>
+
+    <!-- テキスト並び替え -->
+    <div id="text-sort-section" class="hidden section island island-text">
+      <div class="island-title">テキストの並び替え</div>
+      <div class="sort-text-label">テキストを貼り付け（・名前 + URL のペア）</div>
+      <textarea id="text-input" class="sort-text-input" placeholder="・しなの -Shinano-
+　https://booth.pm/ja/items/6106863
+・桔梗 -Kikyo-
+　https://booth.pm/ja/items/3681787"></textarea>
+      <button id="text-sort-btn" class="sort-btn-primary">アルファベット順に並べ替え</button>
+      <div class="sort-text-label">結果</div>
+      <div id="text-output" class="sort-text-output"></div>
+      <div class="sort-btn-row">
+        <button id="text-copy-btn" class="sort-btn-secondary" style="display:none">コピー</button>
+        <button id="text-clear-btn" class="sort-btn-secondary" style="display:none">クリア</button>
+      </div>
+    </div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>

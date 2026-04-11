@@ -1,0 +1,406 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  width: 380px;
+  font-family: "Segoe UI", "Hiragino Sans", "Meiryo", sans-serif;
+  font-size: 14px;
+  color: #333;
+  background: #f5f5f5;
+}
+
+.header {
+  background: #fc4d50;
+  color: #fff;
+  padding: 12px 16px;
+}
+
+.header h1 {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+#content {
+  padding: 12px;
+}
+
+#error {
+  text-align: center;
+  padding: 16px;
+  color: #888;
+}
+
+#error code {
+  background: #e8e8e8;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 12px;
+}
+
+/* ▼ セクション共通 */
+.section {
+  margin-bottom: 12px;
+}
+
+/* ▼ 島（カード）共通 */
+.island {
+  border-radius: 8px;
+  padding: 12px;
+  border-left: 4px solid;
+}
+
+.island-title {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* 表示設定 — グレー系 */
+.island-settings {
+  background: #f8f9fa;
+  border-left-color: #6c757d;
+}
+.island-settings .island-title {
+  color: #495057;
+}
+.island-settings .toggle-row {
+  border-color: #dee2e6;
+}
+
+/* 価格一括変更 — 赤系（既存のテーマカラー） */
+.island-price {
+  background: #fff5f5;
+  border-left-color: #fc4d50;
+}
+.island-price .island-title {
+  color: #c53030;
+}
+
+/* バリエーション並び替え — 青系 */
+.island-sort {
+  background: #ebf8ff;
+  border-left-color: #3182ce;
+}
+.island-sort .island-title {
+  color: #2b6cb0;
+}
+
+/* テキスト並び替え — 緑系 */
+.island-text {
+  background: #f0fff4;
+  border-left-color: #38a169;
+}
+.island-text .island-title {
+  color: #276749;
+}
+
+.section-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #555;
+  margin-bottom: 8px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid #ddd;
+}
+
+/* ▼ ヘルプトグル */
+.toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin-bottom: 6px;
+}
+
+.toggle-row:last-child {
+  margin-bottom: 0;
+}
+
+.toggle-label {
+  font-size: 13px;
+  color: #333;
+}
+
+.toggle-switch {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  background: #ccc;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+
+.toggle-switch[data-active="true"] {
+  background: #fc4d50;
+}
+
+.toggle-knob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.2s;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-switch[data-active="true"] .toggle-knob {
+  transform: translateX(20px);
+}
+
+/* ▼ 価格変更セクション */
+#loading {
+  text-align: center;
+  padding: 16px;
+  color: #888;
+}
+
+.no-data {
+  text-align: center;
+  padding: 12px;
+  color: #888;
+  font-size: 13px;
+}
+
+.variation-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 10px 12px;
+}
+
+.variation-names {
+  font-size: 12px;
+  color: #333;
+  margin-bottom: 2px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.variation-count {
+  font-size: 11px;
+  color: #999;
+  margin-bottom: 6px;
+}
+
+.price-fields {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.price-input {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  text-align: right;
+}
+
+.price-input.current {
+  background: #f0f0f0;
+  color: #666;
+}
+
+.price-input.new-price:focus {
+  outline: none;
+  border-color: #fc4d50;
+  box-shadow: 0 0 0 2px rgba(252, 77, 80, 0.2);
+}
+
+.price-unit {
+  font-size: 13px;
+  color: #666;
+  white-space: nowrap;
+}
+
+.arrow {
+  font-size: 18px;
+  color: #999;
+  flex-shrink: 0;
+}
+
+.field-group {
+  flex: 1;
+  min-width: 0;
+}
+
+#actions {
+  margin-top: 8px;
+}
+
+#applyBtn {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  background: #fc4d50;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+#applyBtn:hover {
+  background: #e0383b;
+}
+
+#applyBtn:disabled {
+  background: #ccc;
+  cursor: default;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* ▼ バリエーション並び替えセクション */
+.sort-status-box {
+  background: #f7fafc;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 12px;
+  color: #666;
+  min-height: 36px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.sort-preview {
+  font-size: 11px;
+  color: #888;
+  word-break: break-all;
+  line-height: 1.6;
+  margin-top: 6px;
+  white-space: pre-wrap;
+}
+
+.sort-btn-primary {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  background: #3182ce;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: background 0.15s;
+}
+
+.sort-btn-primary:hover:not(:disabled) {
+  background: #2b6cb0;
+}
+
+.sort-btn-primary:disabled {
+  background: #a0aec0;
+  cursor: not-allowed;
+}
+
+.sort-btn-danger {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  background: #e53e3e;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: background 0.15s;
+}
+
+.sort-btn-danger:hover {
+  background: #c53030;
+}
+
+.sort-btn-secondary {
+  flex: 1;
+  padding: 8px;
+  background: #edf2f7;
+  color: #2d3748;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.sort-btn-secondary:hover {
+  background: #e2e8f0;
+}
+
+.sort-btn-row {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+/* ▼ テキスト並び替えセクション */
+.sort-text-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #555;
+  margin-bottom: 4px;
+}
+
+.sort-text-input {
+  width: 100%;
+  font-family: monospace;
+  font-size: 11px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 8px;
+  resize: vertical;
+  line-height: 1.5;
+  min-height: 160px;
+  box-sizing: border-box;
+}
+
+.sort-text-input:focus {
+  outline: none;
+  border-color: #fc4d50;
+  box-shadow: 0 0 0 2px rgba(252, 77, 80, 0.2);
+}
+
+.sort-text-output {
+  width: 100%;
+  min-height: 160px;
+  font-family: monospace;
+  font-size: 11px;
+  background: #f7fafc;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 8px;
+  resize: vertical;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-all;
+  box-sizing: border-box;
+}

@@ -1,11 +1,23 @@
 {
   "manifest_version": 3,
-  "name": "Product Edit Page Extension for BOOTH",
-  "version": "1.0.0",
-  "description": "BOOTH商品編集画面の入力欄を使いやすく調整します。",
+  "name": "Product Edit Page ProTool for BOOTH",
+  "version": "1.2.0",
+  "description": "BOOTH商品編集画面の入力欄を使いやすく調整＋バリエーション価格一括変更＋並び替え",
+  "permissions": ["activeTab", "scripting", "debugger", "storage"],
   "host_permissions": [
     "https://manage.booth.pm/*"
   ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
   "content_scripts": [
     {
       "matches": ["https://manage.booth.pm/items/*/edit"],
@@ -15,8 +27,8 @@
     }
   ],
   "icons": {
-    "16": "icon16.png",
-    "48": "icon48.png",
-    "128": "icon128.png"
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
   }
 }
