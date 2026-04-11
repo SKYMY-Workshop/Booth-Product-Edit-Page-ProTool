@@ -42,7 +42,7 @@ BOOTHの商品編集画面における「商品説明」等の入力欄幅を商
 
 拡張機能アイコンをクリックすると、以下の4つの機能カードに分かれたポップアップUIが表示されます。
 
-![ポップアップUIのスクリーンショット](docs/popup-screenshot.png)
+<img src="docs/popup-screenshot.png" width="33%" alt="ポップアップUIのスクリーンショット">
 
 | カード | 色 | 機能 |
 |---|---|---|
@@ -106,9 +106,6 @@ const SETTINGS = {
 ## 謝辞
 
 BOOTHの素晴らしいプラットフォームを提供してくださっているpixiv Inc.に感謝します。
-
-本ツールの開発にあたり、以下のコードを参考にさせていただきました。素晴らしい知見を公開してくださった nekobako 様に感謝いたします。
-- [nekobako/content.js (Gist)](https://gist.github.com/nekobako/81cc427b7c80fe072ca82907b9da026f)
 
 ## ライセンス
 
