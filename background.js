@@ -1,5 +1,5 @@
 /**
- * Product Edit Page ProTool for BOOTH — background service worker
+ * Booth Product Edit Page ProTool — background service worker
  * Chrome DevTools Protocol (CDP) を使って信頼済みマウスイベントを送信し、
  * dnd-kit の PointerSensor でドラッグ＆ドロップを実行する。
  */

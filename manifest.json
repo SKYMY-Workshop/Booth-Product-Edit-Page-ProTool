@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Product Edit Page ProTool for BOOTH",
+  "name": "Booth Product Edit Page ProTool",
   "version": "1.2.0",
   "description": "BOOTH商品編集画面の入力欄を使いやすく調整＋バリエーション価格一括変更＋並び替え",
   "permissions": ["activeTab", "scripting", "debugger", "storage"],

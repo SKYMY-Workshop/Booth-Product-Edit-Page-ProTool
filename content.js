@@ -1,4 +1,4 @@
-// Product Edit Page ProTool for BOOTH - Content Script (Auto Apply + Price Changer)
+// Booth Product Edit Page ProTool - Content Script (Auto Apply + Price Changer)
 
 (function() {
   'use strict';

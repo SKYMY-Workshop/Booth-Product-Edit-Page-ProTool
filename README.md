@@ -1,4 +1,4 @@
-# Product Edit Page ProTool for BOOTH
+# Booth Product Edit Page ProTool
 
 BOOTHの商品編集画面をより快適にするChrome拡張機能です。
 入力欄の自動拡張、ヘルプテキストの非表示切り替え、セクションの折りたたみ、バリエーション価格の一括変更、バリエーションの自動並び替えなど、編集作業を効率化する機能をまとめて提供します。
@@ -107,6 +107,9 @@ const SETTINGS = {
 
 BOOTHの素晴らしいプラットフォームを提供してくださっているpixiv Inc.に感謝します。
 
+本ツールの開発にあたり、以下のコードを参考にさせていただきました。素晴らしい知見を公開してくださった nekobako 様に感謝いたします。
+- [nekobako/content.js (Gist)](https://gist.github.com/nekobako/81cc427b7c80fe072ca82907b9da026f)
+
 ## ライセンス
 
 MIT License
@@ -138,7 +141,7 @@ MIT License
 
 ### v1.1.0 (2026-04-12)
 
-- **名称変更**: 「Product Edit Page Extension for BOOTH」→「Product Edit Page ProTool for BOOTH」
+- **名称変更**: 「Product Edit Page Extension for BOOTH」→「Booth Product Edit Page ProTool」
 - **バリエーション価格一括変更機能を追加**: ポップアップUIから同じ価格のバリエーションをグループ化し、一括で価格を変更可能（Booth Price Changer の機能を統合）
 - **ヘルプテキスト非表示トグルを追加**: ページ右下のボタンまたはポップアップのスイッチで、編集画面内のヘルプ文・注意書きをまとめて非表示/表示切り替え可能。対象テキスト:
   - 「1番目の画像が商品一覧のサムネイル...」
