@@ -976,9 +976,28 @@
   }
 
   async function injectVariation(name, price) {
-    const addBtn = findAddVariationButton();
+    // オプション設定セクションが折りたたまれている場合は展開する
+    let addBtn = findAddVariationButton();
     if (!addBtn) {
-      return { success: false, error: 'バリエーション追加ボタンが見つかりません' };
+      const optionToggles = document.querySelectorAll('span.leading-4');
+      for (const toggle of optionToggles) {
+        if (toggle.textContent.trim() === 'オプション設定を開く') {
+          const clickTarget = toggle.closest('.flex.justify-between.cursor-pointer');
+          if (clickTarget) {
+            clickTarget.click();
+            // セクション展開を待つ
+            for (let i = 0; i < 30; i++) {
+              await new Promise(r => setTimeout(r, 100));
+              addBtn = findAddVariationButton();
+              if (addBtn) break;
+            }
+          }
+          break;
+        }
+      }
+      if (!addBtn) {
+        return { success: false, error: 'バリエーション追加ボタンが見つかりません' };
+      }
     }
 
     // 追加前のダウンロード商品数を記録
