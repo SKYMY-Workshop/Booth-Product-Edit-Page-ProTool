@@ -686,6 +686,12 @@
         sendResponse(result);
       });
       return true; // async
+    } else if (request.action === "firefoxDrag") {
+      // Firefox 用: background.js から転送されたドラッグ要求を PointerEvent で処理
+      performDragFirefox(request.fromX, request.fromY, request.toX, request.toY, request.steps)
+        .then((ok) => sendResponse({ ok }))
+        .catch(() => sendResponse({ ok: false }));
+      return true; // async
     }
     return true;
   });
@@ -1070,6 +1076,82 @@
 
     newModule.scrollIntoView({ block: 'center', behavior: 'smooth' });
     return { success: true, filesSelected: 0 };
+  }
+
+  // ===== 5c. Firefox 用 PointerEvent ドラッグ処理 =====
+
+  /**
+   * Firefox では chrome.debugger (CDP) が使えないため、
+   * コンテンツスクリプト内から直接 PointerEvent を dispatch してドラッグを再現する。
+   * dnd-kit の PointerSensor は pointerdown → pointermove → pointerup を監視しており、
+   * この方式で動作する。
+   */
+  function firefoxWait(ms) {
+    return new Promise(r => setTimeout(r, ms));
+  }
+
+  async function performDragFirefox(fromX, fromY, toX, toY, steps) {
+    const el = document.elementFromPoint(fromX, fromY);
+    if (!el) return false;
+
+    const commonOpts = {
+      bubbles: true,
+      cancelable: true,
+      view: window,
+      pointerId: 1,
+      pointerType: 'mouse',
+      isPrimary: true,
+      width: 1,
+      height: 1,
+    };
+
+    // pointerdown
+    el.dispatchEvent(new PointerEvent('pointerdown', {
+      ...commonOpts,
+      clientX: fromX, clientY: fromY,
+      button: 0, buttons: 1,
+    }));
+    el.dispatchEvent(new MouseEvent('mousedown', {
+      bubbles: true, cancelable: true, view: window,
+      clientX: fromX, clientY: fromY,
+      button: 0, buttons: 1,
+    }));
+
+    await firefoxWait(60);
+
+    // pointermove （段階的に移動）
+    const STEPS = steps || 8;
+    for (let s = 1; s <= STEPS; s++) {
+      const x = Math.round(fromX + (toX - fromX) * s / STEPS);
+      const y = Math.round(fromY + (toY - fromY) * s / STEPS);
+      document.dispatchEvent(new PointerEvent('pointermove', {
+        ...commonOpts,
+        clientX: x, clientY: y,
+        button: 0, buttons: 1,
+      }));
+      document.dispatchEvent(new MouseEvent('mousemove', {
+        bubbles: true, cancelable: true, view: window,
+        clientX: x, clientY: y,
+        button: 0, buttons: 1,
+      }));
+      await firefoxWait(12);
+    }
+
+    await firefoxWait(60);
+
+    // pointerup
+    document.dispatchEvent(new PointerEvent('pointerup', {
+      ...commonOpts,
+      clientX: toX, clientY: toY,
+      button: 0, buttons: 0,
+    }));
+    document.dispatchEvent(new MouseEvent('mouseup', {
+      bubbles: true, cancelable: true, view: window,
+      clientX: toX, clientY: toY,
+      button: 0, buttons: 0,
+    }));
+
+    return true;
   }
 
   // ===== 6. バリエーション並び替え機能 =====
