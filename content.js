@@ -269,6 +269,112 @@
   recommendTagObserver.observe(document.body, { childList: true, subtree: true });
   createRecommendTagToggle();
 
+  // ===== 2d. 段落テンプレート保存ボタン =====
+
+  const PARAGRAPH_TEMPLATES_KEY = 'booth-ext-paragraph-templates';
+
+  function getParagraphData(module) {
+    const contentDiv = module.querySelector('div.bg-white');
+    if (!contentDiv) return null;
+
+    const titleInput = contentDiv.querySelector('input.charcoal-text-field-input');
+    const bodyTextarea = contentDiv.querySelector('textarea.charcoal-text-area-textarea');
+
+    return {
+      title: titleInput ? titleInput.value : '',
+      body: bodyTextarea ? bodyTextarea.value : '',
+    };
+  }
+
+  function saveParagraphTemplate(data) {
+    return new Promise((resolve) => {
+      chrome.storage.local.get(PARAGRAPH_TEMPLATES_KEY, (result) => {
+        const templates = result[PARAGRAPH_TEMPLATES_KEY] || [];
+        templates.push({
+          id: Date.now().toString(),
+          title: data.title,
+          body: data.body,
+        });
+        chrome.storage.local.set({ [PARAGRAPH_TEMPLATES_KEY]: templates }, resolve);
+      });
+    });
+  }
+
+  function createParagraphSaveBtn(module) {
+    const saveBtn = document.createElement('button');
+    saveBtn.className = 'booth-ext-paragraph-save-btn';
+    saveBtn.textContent = '💾 保存';
+    saveBtn.title = 'この段落をテンプレートとして保存';
+
+    // ドラッグ操作との競合を防止
+    ['mousedown', 'pointerdown', 'touchstart'].forEach(evtName => {
+      saveBtn.addEventListener(evtName, (e) => e.stopPropagation());
+    });
+
+    saveBtn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+
+      const data = getParagraphData(module);
+      if (!data) return;
+
+      await saveParagraphTemplate(data);
+      saveBtn.textContent = '✅ 保存しました';
+      setTimeout(() => { saveBtn.textContent = '💾 保存'; }, 1500);
+    });
+
+    return saveBtn;
+  }
+
+  // ===== 2e. バリエーションテンプレート保存ボタン =====
+
+  const VARIATION_TEMPLATES_KEY = 'booth-ext-variation-templates';
+
+  function getVariationName(module) {
+    const contentDiv = module.querySelector('div.bg-white');
+    if (!contentDiv) return null;
+    const nameInput = contentDiv.querySelector('input.charcoal-text-field-input');
+    return nameInput ? nameInput.value : '';
+  }
+
+  function saveVariationTemplate(name) {
+    return new Promise((resolve) => {
+      chrome.storage.local.get(VARIATION_TEMPLATES_KEY, (result) => {
+        const templates = result[VARIATION_TEMPLATES_KEY] || [];
+        templates.push({
+          id: Date.now().toString(),
+          name: name,
+        });
+        chrome.storage.local.set({ [VARIATION_TEMPLATES_KEY]: templates }, resolve);
+      });
+    });
+  }
+
+  function createVariationSaveBtn(module) {
+    const saveBtn = document.createElement('button');
+    saveBtn.className = 'booth-ext-variation-save-btn';
+    saveBtn.textContent = '💾 保存';
+    saveBtn.title = 'このバリエーション名をテンプレートとして保存';
+
+    ['mousedown', 'pointerdown', 'touchstart'].forEach(evtName => {
+      saveBtn.addEventListener(evtName, (e) => e.stopPropagation());
+    });
+
+    saveBtn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+
+      const name = getVariationName(module);
+      if (!name) return;
+
+      await saveVariationTemplate(name);
+      saveBtn.textContent = '✅ 保存しました';
+      setTimeout(() => { saveBtn.textContent = '💾 保存'; }, 1500);
+    });
+
+    return saveBtn;
+  }
+
   // ===== 3. セクション折りたたみ機能 =====
 
   const DEFAULT_COLLAPSE_KEY = 'booth-ext-default-collapse';
@@ -377,6 +483,34 @@
       }
     }
 
+    // --- タグセクション ---
+    const tagSection = document.getElementById('item_tag');
+    if (tagSection && tagSection.dataset.collapseSetup !== 'true') {
+      tagSection.dataset.collapseSetup = 'true';
+
+      const tagLabel = tagSection.querySelector(':scope > label.text-14.font-bold');
+      if (tagLabel) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'booth-ext-collapse-label-row';
+        tagLabel.parentNode.insertBefore(wrapper, tagLabel);
+        wrapper.appendChild(tagLabel);
+        const btn = createCollapseBtn('タグ');
+        wrapper.appendChild(btn);
+
+        // タグラベル以降の全兄弟要素を折りたたみ対象にする
+        const targets = [];
+        let sibling = wrapper.nextElementSibling;
+        while (sibling) {
+          targets.push(sibling);
+          sibling = sibling.nextElementSibling;
+        }
+
+        if (isDefaultCollapseEnabled()) applyCollapse(targets, true, 'hide');
+
+        btn.addEventListener('click', () => toggleCollapse(btn, targets, 'hide'));
+      }
+    }
+
     // --- 段落・ダウンロード商品セクション ---
     // variation-box-head を持つ全ての li を対象にする
     const headButtons = document.querySelectorAll('button.variation-box-head');
@@ -401,6 +535,15 @@
       const btn = createCollapseBtn(labelText);
       btn.classList.add('booth-ext-collapse-btn-module');
       headDiv.appendChild(btn);
+
+      // 段落・ダウンロード商品セクションの場合は保存ボタンを追加（▼の右隣）
+      if (labelText === '段落') {
+        const saveBtn = createParagraphSaveBtn(module);
+        headDiv.appendChild(saveBtn);
+      } else if (labelText === 'ダウンロード商品') {
+        const saveBtn = createVariationSaveBtn(module);
+        headDiv.appendChild(saveBtn);
+      }
 
       // プレビュー用span（段落の場合は見出しテキスト、ダウンロード商品の場合はバリエーション名）
       const preview = document.createElement('span');
@@ -435,6 +578,18 @@
       if (isDefaultCollapseEnabled()) {
         applyCollapse(targets, true, 'hide');
         updatePreview(true);
+      }
+
+      // 見出し入力欄の値変更を監視し、折りたたみ中ならプレビューを自動更新
+      const titleInput = contentDiv.querySelector('input.charcoal-text-field-input');
+      if (titleInput) {
+        ['input', 'change'].forEach(evtName => {
+          titleInput.addEventListener(evtName, () => {
+            if (btn.dataset.collapsed === 'true') {
+              updatePreview(true);
+            }
+          });
+        });
       }
 
       btn.addEventListener('click', (e) => {
@@ -521,6 +676,16 @@
     } else if (request.action === "cancelSort") {
       sortCancelled = true;
       sendResponse({ ok: true });
+    } else if (request.action === "injectParagraph") {
+      injectParagraph(request.title, request.body).then((result) => {
+        sendResponse(result);
+      });
+      return true; // async
+    } else if (request.action === "injectVariation") {
+      injectVariation(request.name, request.price).then((result) => {
+        sendResponse(result);
+      });
+      return true; // async
     }
     return true;
   });
@@ -564,7 +729,350 @@
     });
   }
 
-  // ===== 5. バリエーション並び替え機能 =====
+  // ===== 5. 段落テンプレート注入機能 =====
+
+  function findAddParagraphButton() {
+    // 「段落」テキストを持つ追加ボタンを探す
+    const buttons = document.querySelectorAll('button.charcoal-button');
+    for (const btn of buttons) {
+      const span = btn.querySelector('span');
+      if (span && span.textContent.trim() === '段落') {
+        // pixiv-icon name="16/Add" を含むか確認
+        const icon = btn.querySelector('pixiv-icon[name="16/Add"]');
+        if (icon) return btn;
+      }
+    }
+    return null;
+  }
+
+  function setReactValue(el, value) {
+    const nativeSetter = Object.getOwnPropertyDescriptor(
+      el.tagName === 'TEXTAREA' ? window.HTMLTextAreaElement.prototype : window.HTMLInputElement.prototype,
+      'value'
+    ).set;
+    nativeSetter.call(el, value);
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+    el.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+
+  async function injectParagraph(title, body) {
+    const addBtn = findAddParagraphButton();
+    if (!addBtn) {
+      return { success: false, error: '段落の追加ボタンが見つかりません' };
+    }
+
+    // 追加前の段落数を記録
+    const paragraphsBefore = document.querySelectorAll('li.js-item-module').length;
+
+    // 「+ 段落」ボタンをクリック
+    addBtn.click();
+
+    // 新しい段落が追加されるのを待つ（最大3秒）
+    let newModule = null;
+    for (let i = 0; i < 30; i++) {
+      await new Promise(r => setTimeout(r, 100));
+      const allModules = document.querySelectorAll('li.js-item-module');
+      if (allModules.length > paragraphsBefore) {
+        newModule = allModules[allModules.length - 1];
+        break;
+      }
+    }
+
+    if (!newModule) {
+      return { success: false, error: '新しい段落の追加を検出できませんでした' };
+    }
+
+    // 少し待ってからReactの入力欄にアクセス
+    await new Promise(r => setTimeout(r, 200));
+
+    const contentDiv = newModule.querySelector('div.bg-white');
+    if (!contentDiv) {
+      return { success: false, error: '段落のコンテンツ領域が見つかりません' };
+    }
+
+    const titleInput = contentDiv.querySelector('input.charcoal-text-field-input');
+    const bodyTextarea = contentDiv.querySelector('textarea.charcoal-text-area-textarea');
+
+    if (titleInput && title) {
+      setReactValue(titleInput, title);
+    }
+    if (bodyTextarea && body) {
+      setReactValue(bodyTextarea, body);
+    }
+
+    // 追加した段落までスクロール
+    newModule.scrollIntoView({ block: 'center', behavior: 'smooth' });
+
+    return { success: true };
+  }
+
+  // ===== 5b. バリエーションテンプレート注入機能 =====
+
+  /**
+   * バリエーション名から検索キーワードを抽出する。
+   * 例: "しなの -Shinano-" → ["しなの", "shinano"]
+   */
+  function extractVariationSearchTerms(name) {
+    const terms = [];
+    // 英字部分を抽出
+    const alphaMatches = name.match(/[A-Za-z][A-Za-z0-9]*/g);
+    if (alphaMatches) {
+      alphaMatches.forEach(m => {
+        const lower = m.toLowerCase();
+        if (lower.length >= 2) terms.push(lower);
+      });
+    }
+    // 日本語部分を抽出（ひらがな・カタカナ・漢字）
+    const jpMatches = name.match(/[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF]+/g);
+    if (jpMatches) {
+      jpMatches.forEach(m => {
+        if (m.length >= 1) terms.push(m);
+      });
+    }
+    return terms;
+  }
+
+  function findAddVariationButton() {
+    const buttons = document.querySelectorAll('button.charcoal-button');
+    for (const btn of buttons) {
+      const span = btn.querySelector('span');
+      if (span && span.textContent.trim() === 'バリエーションを追加') {
+        const icon = btn.querySelector('pixiv-icon[name="16/Add"]');
+        if (icon) return btn;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * ダウンロード商品モジュール内のファイル管理ボタンを探す
+   */
+  function findFileManageButton(module) {
+    const buttons = module.querySelectorAll('button.charcoal-button');
+    for (const btn of buttons) {
+      const span = btn.querySelector('span');
+      if (span && span.textContent.includes('ファイルの追加・管理')) {
+        return btn;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * ファイル管理ダイアログ内でマッチするファイルのチェックボックスを選択する
+   */
+  function selectMatchingFiles(searchTerms) {
+    // 常にマッチさせるキーワード（小文字）
+    const alwaysMatch = ['psd', 'texture', 'material'];
+    const allTerms = [...alwaysMatch, ...searchTerms];
+
+    // ダイアログ内の全チェックボックスを探す
+    const checkboxes = document.querySelectorAll('.charcoal-checkbox-input[type="checkbox"]');
+    let selectedCount = 0;
+
+    checkboxes.forEach(cb => {
+      const label = cb.closest('label.charcoal-checkbox__label');
+      if (!label) return;
+
+      // ファイル名を取得（<a>タグ or ラベルテキスト）
+      const link = label.querySelector('a');
+      if (!link) return;
+      const fileName = link.textContent.trim().toLowerCase();
+
+      // マッチ判定
+      const matches = allTerms.some(term => fileName.includes(term));
+      if (matches && !cb.checked) {
+        cb.click();
+        selectedCount++;
+      }
+    });
+
+    return selectedCount;
+  }
+
+  /**
+   * 開いているファイル管理ダイアログの「閉じる」ボタンを探してクリック
+   */
+  /**
+   * 要素にマウスクリックをシミュレーションする
+   */
+  function simulateMouseClick(el) {
+    const rect = el.getBoundingClientRect();
+    const x = rect.left + rect.width / 2;
+    const y = rect.top + rect.height / 2;
+    const opts = { bubbles: true, cancelable: true, view: window, clientX: x, clientY: y };
+
+    el.dispatchEvent(new MouseEvent('pointerdown', opts));
+    el.dispatchEvent(new MouseEvent('mousedown', opts));
+    el.dispatchEvent(new MouseEvent('pointerup', opts));
+    el.dispatchEvent(new MouseEvent('mouseup', opts));
+    el.dispatchEvent(new MouseEvent('click', opts));
+  }
+
+  function findCloseButton() {
+    // ダイアログのタイトル「ファイルの追加・管理」を起点にダイアログを特定
+    const allDivs = document.querySelectorAll('div');
+    for (const div of allDivs) {
+      if (div.textContent.trim() === 'ファイルの追加・管理' &&
+          div.classList.contains('text-center') &&
+          div.classList.contains('py-12')) {
+        // タイトル要素の親コンテナ（ダイアログ全体）を辿る
+        const dialogRoot = div.closest('div.bg-white');
+        if (!dialogRoot) continue;
+        // ダイアログ内の全ボタンから「閉じる」を探す
+        const buttons = dialogRoot.querySelectorAll('button');
+        for (const btn of buttons) {
+          if (btn.textContent.trim() === '閉じる') return btn;
+        }
+      }
+    }
+    // フォールバック: 画面に表示されている「閉じる」ボタンを探す
+    const allButtons = document.querySelectorAll('button');
+    for (const btn of allButtons) {
+      if (btn.textContent.trim() === '閉じる') {
+        const rect = btn.getBoundingClientRect();
+        if (rect.width > 0 && rect.height > 0) return btn;
+      }
+    }
+    return null;
+  }
+
+  async function closeFileManageDialog() {
+    const btn = findCloseButton();
+    if (!btn) return false;
+
+    btn.scrollIntoView({ block: 'center', behavior: 'instant' });
+    await new Promise(r => setTimeout(r, 100));
+
+    // マウスシミュレーション
+    simulateMouseClick(btn);
+
+    // それでも閉じない場合に備えて、直接clickも試行
+    await new Promise(r => setTimeout(r, 100));
+    btn.click();
+
+    return true;
+  }
+
+  /**
+   * 販売方法選択ダイアログから「ダウンロード販売」ボタンを探してクリック
+   */
+  function findDownloadSaleButton() {
+    // ダイアログ内の「ダウンロード販売」テキストを含むボタンを探す
+    const buttons = document.querySelectorAll('button[type="button"]');
+    for (const btn of buttons) {
+      const bold = btn.querySelector('b');
+      if (bold && bold.textContent.includes('ダウンロード販売')) {
+        return btn;
+      }
+    }
+    return null;
+  }
+
+  async function injectVariation(name, price) {
+    const addBtn = findAddVariationButton();
+    if (!addBtn) {
+      return { success: false, error: 'バリエーション追加ボタンが見つかりません' };
+    }
+
+    // 追加前のダウンロード商品数を記録
+    const modulesBefore = document.querySelectorAll('div[id^="variationName-"]').length;
+
+    // 「バリエーションを追加」ボタンをクリック
+    addBtn.click();
+
+    // 販売方法選択ダイアログが表示されるのを待つ
+    let downloadBtn = null;
+    for (let i = 0; i < 30; i++) {
+      await new Promise(r => setTimeout(r, 100));
+      downloadBtn = findDownloadSaleButton();
+      if (downloadBtn) break;
+    }
+
+    if (!downloadBtn) {
+      return { success: false, error: '販売方法選択ダイアログが表示されませんでした' };
+    }
+
+    // 「ダウンロード販売」をクリック
+    downloadBtn.click();
+
+    // 新しいバリエーションが追加されるのを待つ（最大3秒）
+    let newModule = null;
+    for (let i = 0; i < 30; i++) {
+      await new Promise(r => setTimeout(r, 100));
+      const allModules = document.querySelectorAll('div[id^="variationName-"]');
+      if (allModules.length > modulesBefore) {
+        newModule = allModules[allModules.length - 1];
+        break;
+      }
+    }
+
+    if (!newModule) {
+      return { success: false, error: '新しいバリエーションの追加を検出できませんでした' };
+    }
+
+    await new Promise(r => setTimeout(r, 200));
+
+    // バリエーション名を設定
+    const nameInput = newModule.querySelector('input.charcoal-text-field-input');
+    if (nameInput && name) {
+      setReactValue(nameInput, name);
+    }
+
+    // 価格を設定（variationName-XXX の XXX を取得して variationDigitalPrice-XXX を探す）
+    const variationId = newModule.id.replace('variationName-', '');
+    const priceInput = document.querySelector(
+      `#variationDigitalPrice-${variationId} input.charcoal-text-field-input`
+    );
+    if (priceInput && price) {
+      setReactValue(priceInput, price);
+    }
+
+    // ファイル管理ダイアログを開いてファイルを自動選択
+    const parentModule = newModule.closest('li');
+    if (parentModule) {
+      const fileBtn = findFileManageButton(parentModule);
+      if (fileBtn) {
+        fileBtn.click();
+
+        // ダイアログが開くのを待つ（最大3秒）
+        let dialogReady = false;
+        for (let i = 0; i < 30; i++) {
+          await new Promise(r => setTimeout(r, 100));
+          const checkboxes = document.querySelectorAll('.charcoal-checkbox-input[type="checkbox"]');
+          // ダイアログ内のチェックボックスが存在し、ファイルリンクを含むか確認
+          for (const cb of checkboxes) {
+            const label = cb.closest('label.charcoal-checkbox__label');
+            if (label && label.querySelector('a[href*="downloadables"]')) {
+              dialogReady = true;
+              break;
+            }
+          }
+          if (dialogReady) break;
+        }
+
+        if (dialogReady) {
+          await new Promise(r => setTimeout(r, 200));
+          const searchTerms = extractVariationSearchTerms(name);
+          const selectedCount = selectMatchingFiles(searchTerms);
+
+          await new Promise(r => setTimeout(r, 300));
+          await closeFileManageDialog();
+
+          parentModule.scrollIntoView({ block: 'center', behavior: 'smooth' });
+          return { success: true, filesSelected: selectedCount };
+        } else {
+          parentModule.scrollIntoView({ block: 'center', behavior: 'smooth' });
+          return { success: true, filesSelected: 0, warning: 'ファイル管理ダイアログの読み込みに失敗しました' };
+        }
+      }
+    }
+
+    newModule.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    return { success: true, filesSelected: 0 };
+  }
+
+  // ===== 6. バリエーション並び替え機能 =====
 
   let sortProgress = { message: '待機中', done: false, error: false };
   let sortCancelled = false;

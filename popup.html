@@ -42,6 +42,45 @@
       </div>
     </div>
 
+    <!-- 段落テンプレート -->
+    <div id="paragraph-section" class="hidden section island island-paragraph">
+      <div class="island-title">段落テンプレート</div>
+      <div id="paragraph-list"></div>
+      <div id="paragraph-empty" class="no-data" style="display:none">保存済みテンプレートはありません</div>
+      <div class="paragraph-add-form">
+        <div class="paragraph-add-title">新しいテンプレートを追加</div>
+        <input type="text" id="paragraph-new-title" class="paragraph-input" placeholder="見出しテキスト">
+        <textarea id="paragraph-new-body" class="paragraph-textarea" placeholder="本文テキスト" rows="4"></textarea>
+        <button id="paragraph-add-btn" class="paragraph-btn-add">テンプレートを保存</button>
+      </div>
+    </div>
+
+    <!-- バリエーションテンプレート -->
+    <div id="variation-tmpl-section" class="hidden section island island-variation-tmpl">
+      <div class="island-title">バリエーションテンプレート</div>
+      <div class="variation-tmpl-price-row">
+        <span class="variation-tmpl-price-label">追加時の価格</span>
+        <input type="text" id="variation-tmpl-price" class="variation-tmpl-price-input" placeholder="例: 400" inputmode="numeric">
+        <span class="variation-tmpl-price-unit">円</span>
+      </div>
+      <div id="variation-tmpl-list"></div>
+      <div id="variation-tmpl-empty" class="no-data" style="display:none">保存済みテンプレートはありません</div>
+      <div class="paragraph-add-form">
+        <div class="paragraph-add-title" style="color:#b7791f">新しいバリエーション名を追加</div>
+        <input type="text" id="variation-tmpl-new-name" class="paragraph-input" placeholder="例: しなの -Shinano-">
+        <button id="variation-tmpl-add-btn" class="variation-tmpl-btn-add">テンプレートを保存</button>
+      </div>
+    </div>
+
+    <!-- バリエーション並び替え -->
+    <div id="sort-section" class="hidden section island island-sort">
+      <div class="island-title">バリエーションの並び替え</div>
+      <div id="sort-status-box" class="sort-status-box">読み込み中...</div>
+      <div id="sort-preview" class="sort-preview"></div>
+      <button id="sort-btn" class="sort-btn-primary" disabled>バリエーションをアルファベット順に並べ替え</button>
+      <button id="sort-cancel-btn" class="sort-btn-danger" style="display:none">キャンセル</button>
+    </div>
+
     <!-- 価格一括変更 -->
     <div id="price-section" class="hidden section island island-price">
       <div class="island-title">価格の一括変更</div>
@@ -55,15 +94,6 @@
       </div>
     </div>
 
-    <!-- バリエーション並び替え -->
-    <div id="sort-section" class="hidden section island island-sort">
-      <div class="island-title">バリエーションの並び替え</div>
-      <div id="sort-status-box" class="sort-status-box">読み込み中...</div>
-      <div id="sort-preview" class="sort-preview"></div>
-      <button id="sort-btn" class="sort-btn-primary" disabled>バリエーションをアルファベット順に並べ替え</button>
-      <button id="sort-cancel-btn" class="sort-btn-danger" style="display:none">キャンセル</button>
-    </div>
-
     <!-- テキスト並び替え -->
     <div id="text-sort-section" class="hidden section island island-text">
       <div class="island-title">テキストの並び替え</div>
@@ -72,7 +102,10 @@
 　https://booth.pm/ja/items/6106863
 ・桔梗 -Kikyo-
 　https://booth.pm/ja/items/3681787"></textarea>
-      <button id="text-sort-btn" class="sort-btn-primary">アルファベット順に並べ替え</button>
+      <div class="sort-btn-row">
+        <button id="text-sort-btn" class="sort-btn-primary" style="flex:1">アルファベット順に並べ替え</button>
+        <button id="text-input-clear-btn" class="sort-btn-clear-small">クリア</button>
+      </div>
       <div class="sort-text-label">結果</div>
       <div id="text-output" class="sort-text-output"></div>
       <div class="sort-btn-row">

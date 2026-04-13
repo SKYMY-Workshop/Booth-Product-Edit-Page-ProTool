@@ -360,6 +360,376 @@ body {
   display: flex;
   gap: 6px;
   margin-top: 6px;
+  align-items: center;
+}
+
+.sort-btn-clear-small {
+  padding: 2px 6px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #666;
+  background: #edf2f7;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+  line-height: 1.2;
+  flex-shrink: 0;
+}
+
+.sort-btn-clear-small:hover {
+  background: #e2e8f0;
+  color: #333;
+}
+
+/* ▼ バリエーションテンプレートセクション — オレンジ系 */
+.island-variation-tmpl {
+  background: #fffaf0;
+  border-left-color: #d69e2e;
+}
+.island-variation-tmpl .island-title {
+  color: #975a16;
+}
+
+.variation-tmpl-price-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 8px 10px;
+  margin-bottom: 8px;
+}
+
+.variation-tmpl-price-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #975a16;
+  white-space: nowrap;
+}
+
+.variation-tmpl-price-input {
+  flex: 1;
+  padding: 4px 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 13px;
+  text-align: right;
+  min-width: 0;
+}
+
+.variation-tmpl-price-input:focus {
+  outline: none;
+  border-color: #d69e2e;
+  box-shadow: 0 0 0 2px rgba(214, 158, 46, 0.2);
+}
+
+.variation-tmpl-price-unit {
+  font-size: 13px;
+  color: #666;
+  white-space: nowrap;
+}
+
+.variation-tmpl-btn-add {
+  display: block;
+  width: 100%;
+  padding: 8px;
+  background: #d69e2e;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.variation-tmpl-btn-add:hover {
+  background: #b7791f;
+}
+
+/* バリエーションテンプレートアイテム — オレンジ系テーマ */
+.variation-tmpl-item {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  padding: 8px 10px;
+  gap: 6px;
+}
+
+.variation-tmpl-item-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: #333;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.variation-tmpl-item-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.variation-tmpl-btn-inject {
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #fff;
+  background: #d69e2e;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.variation-tmpl-btn-inject:hover {
+  background: #b7791f;
+}
+
+.variation-tmpl-btn-inject:disabled {
+  background: #a0aec0;
+  cursor: not-allowed;
+}
+
+.variation-tmpl-btn-delete {
+  padding: 3px 6px;
+  font-size: 11px;
+  color: #e53e3e;
+  background: transparent;
+  border: 1px solid #e53e3e;
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.variation-tmpl-btn-delete:hover {
+  background: #fff5f5;
+}
+
+.variation-tmpl-btn-move {
+  padding: 1px 5px;
+  font-size: 9px;
+  color: #d69e2e;
+  background: transparent;
+  border: 1px solid #ecc94b;
+  border-radius: 3px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.variation-tmpl-btn-move:hover:not(:disabled) {
+  background: #fefcbf;
+}
+
+.variation-tmpl-btn-move:disabled {
+  color: #ccc;
+  border-color: #e8e8e8;
+  cursor: default;
+}
+
+/* ▼ 段落テンプレートセクション — 紫系 */
+.island-paragraph {
+  background: #faf5ff;
+  border-left-color: #805ad5;
+}
+.island-paragraph .island-title {
+  color: #553c9a;
+}
+
+.paragraph-item {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  margin-bottom: 6px;
+  overflow: hidden;
+}
+
+.paragraph-item-header {
+  display: flex;
+  align-items: center;
+  padding: 8px 10px;
+  cursor: pointer;
+  gap: 6px;
+  user-select: none;
+}
+
+.paragraph-item-header:hover {
+  background: #f9f5ff;
+}
+
+.paragraph-collapse-icon {
+  font-size: 10px;
+  color: #888;
+  flex-shrink: 0;
+  width: 14px;
+  text-align: center;
+}
+
+.paragraph-item-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #333;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.paragraph-item-title-empty {
+  color: #aaa;
+  font-style: italic;
+}
+
+.paragraph-item-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.paragraph-btn-move {
+  padding: 1px 5px;
+  font-size: 9px;
+  color: #805ad5;
+  background: transparent;
+  border: 1px solid #d6bcfa;
+  border-radius: 3px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.paragraph-btn-move:hover:not(:disabled) {
+  background: #e9d8fd;
+}
+
+.paragraph-btn-move:disabled {
+  color: #ccc;
+  border-color: #e8e8e8;
+  cursor: default;
+}
+
+.paragraph-btn-inject {
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #fff;
+  background: #805ad5;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.paragraph-btn-inject:hover {
+  background: #6b46c1;
+}
+
+.paragraph-btn-inject:disabled {
+  background: #a0aec0;
+  cursor: not-allowed;
+}
+
+.paragraph-btn-delete {
+  padding: 3px 6px;
+  font-size: 11px;
+  color: #e53e3e;
+  background: transparent;
+  border: 1px solid #e53e3e;
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.paragraph-btn-delete:hover {
+  background: #fff5f5;
+}
+
+.paragraph-item-body {
+  padding: 0 10px 10px;
+  font-size: 11px;
+  color: #555;
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.5;
+  border-top: 1px solid #eee;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.paragraph-item-body-label {
+  font-size: 10px;
+  color: #888;
+  font-weight: 600;
+  margin-top: 8px;
+  margin-bottom: 2px;
+}
+
+.paragraph-add-form {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed #d6bcfa;
+}
+
+.paragraph-add-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: #553c9a;
+  margin-bottom: 6px;
+}
+
+.paragraph-input {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 12px;
+  margin-bottom: 6px;
+  box-sizing: border-box;
+}
+
+.paragraph-input:focus,
+.paragraph-textarea:focus {
+  outline: none;
+  border-color: #805ad5;
+  box-shadow: 0 0 0 2px rgba(128, 90, 213, 0.2);
+}
+
+.paragraph-textarea {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 11px;
+  font-family: monospace;
+  line-height: 1.5;
+  resize: vertical;
+  min-height: 80px;
+  margin-bottom: 6px;
+  box-sizing: border-box;
+}
+
+.paragraph-btn-add {
+  display: block;
+  width: 100%;
+  padding: 8px;
+  background: #805ad5;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.paragraph-btn-add:hover {
+  background: #6b46c1;
 }
 
 /* ▼ テキスト並び替えセクション */

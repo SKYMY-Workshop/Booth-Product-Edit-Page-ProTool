@@ -130,6 +130,48 @@ li.js-item-module div[class*="desktop:grid-cols-"] > div:first-child {
   z-index: 10;
 }
 
+/* ▼ 段落テンプレート保存ボタン */
+.booth-ext-paragraph-save-btn {
+  padding: 2px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #805ad5;
+  background: #faf5ff;
+  border: 1px solid #d6bcfa;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+  position: relative;
+  z-index: 10;
+}
+
+.booth-ext-paragraph-save-btn:hover {
+  background: #e9d8fd;
+  color: #553c9a;
+}
+
+/* ▼ バリエーションテンプレート保存ボタン */
+.booth-ext-variation-save-btn {
+  padding: 2px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #d69e2e;
+  background: #fffaf0;
+  border: 1px solid #ecc94b;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+  position: relative;
+  z-index: 10;
+}
+
+.booth-ext-variation-save-btn:hover {
+  background: #fefcbf;
+  color: #975a16;
+}
+
 .booth-ext-collapse-preview {
   font-size: 13px;
   color: #555;

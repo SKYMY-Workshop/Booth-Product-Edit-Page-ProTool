@@ -110,6 +110,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       });
     }
 
+    // ===== バリエーションテンプレートセクション =====
+    await initVariationTmplSection(tab);
+
+    // ===== 段落テンプレートセクション =====
+    await initParagraphSection(tab);
+
     // ===== 並び替えセクション =====
     await initSortSection(tab);
 
@@ -174,6 +180,403 @@ function escapeHtml(str) {
   const div = document.createElement("div");
   div.textContent = str;
   return div.innerHTML;
+}
+
+// ===== バリエーションテンプレート機能 =====
+
+const VARIATION_TEMPLATES_KEY = 'booth-ext-variation-templates';
+const VARIATION_PRICE_KEY = 'booth-ext-variation-price';
+
+async function initVariationTmplSection(tab) {
+  const section = document.getElementById('variation-tmpl-section');
+  const listEl = document.getElementById('variation-tmpl-list');
+  const emptyEl = document.getElementById('variation-tmpl-empty');
+  const addBtn = document.getElementById('variation-tmpl-add-btn');
+  const newNameInput = document.getElementById('variation-tmpl-new-name');
+  const priceInput = document.getElementById('variation-tmpl-price');
+
+  section.classList.remove('hidden');
+
+  // 価格の保存・復元
+  const storage = chrome.storage?.local;
+  if (storage) {
+    storage.get(VARIATION_PRICE_KEY, (data) => {
+      if (data[VARIATION_PRICE_KEY]) priceInput.value = data[VARIATION_PRICE_KEY];
+    });
+    priceInput.addEventListener('input', () => {
+      storage.set({ [VARIATION_PRICE_KEY]: priceInput.value });
+    });
+  }
+
+  async function loadTemplates() {
+    return new Promise((resolve) => {
+      chrome.storage.local.get(VARIATION_TEMPLATES_KEY, (result) => {
+        resolve(result[VARIATION_TEMPLATES_KEY] || []);
+      });
+    });
+  }
+
+  async function saveTemplates(templates) {
+    return new Promise((resolve) => {
+      chrome.storage.local.set({ [VARIATION_TEMPLATES_KEY]: templates }, resolve);
+    });
+  }
+
+  async function renderList() {
+    const templates = await loadTemplates();
+    listEl.innerHTML = '';
+
+    if (templates.length === 0) {
+      emptyEl.style.display = '';
+      return;
+    }
+    emptyEl.style.display = 'none';
+
+    templates.forEach((tmpl, idx) => {
+      const item = document.createElement('div');
+      item.className = 'variation-tmpl-item';
+      item.dataset.id = tmpl.id;
+
+      const nameSpan = document.createElement('span');
+      nameSpan.className = 'variation-tmpl-item-name';
+      nameSpan.textContent = tmpl.name;
+
+      const actions = document.createElement('div');
+      actions.className = 'variation-tmpl-item-actions';
+
+      // 並び替えボタン
+      const moveUpBtn = document.createElement('button');
+      moveUpBtn.className = 'variation-tmpl-btn-move';
+      moveUpBtn.textContent = '▲';
+      moveUpBtn.title = '上に移動';
+      moveUpBtn.disabled = idx === 0;
+
+      const moveDownBtn = document.createElement('button');
+      moveDownBtn.className = 'variation-tmpl-btn-move';
+      moveDownBtn.textContent = '▼';
+      moveDownBtn.title = '下に移動';
+      moveDownBtn.disabled = idx === templates.length - 1;
+
+      const injectBtn = document.createElement('button');
+      injectBtn.className = 'variation-tmpl-btn-inject';
+      injectBtn.textContent = '追加';
+      injectBtn.title = 'このバリエーションをページに追加';
+
+      const deleteBtn = document.createElement('button');
+      deleteBtn.className = 'variation-tmpl-btn-delete';
+      deleteBtn.textContent = '削除';
+
+      actions.appendChild(moveUpBtn);
+      actions.appendChild(moveDownBtn);
+      actions.appendChild(injectBtn);
+      actions.appendChild(deleteBtn);
+
+      item.appendChild(nameSpan);
+      item.appendChild(actions);
+      listEl.appendChild(item);
+
+      // 並び替えイベント
+      moveUpBtn.addEventListener('click', async () => {
+        const current = await loadTemplates();
+        const i = current.findIndex(t => t.id === tmpl.id);
+        if (i <= 0) return;
+        [current[i - 1], current[i]] = [current[i], current[i - 1]];
+        await saveTemplates(current);
+        await renderList();
+      });
+
+      moveDownBtn.addEventListener('click', async () => {
+        const current = await loadTemplates();
+        const i = current.findIndex(t => t.id === tmpl.id);
+        if (i < 0 || i >= current.length - 1) return;
+        [current[i], current[i + 1]] = [current[i + 1], current[i]];
+        await saveTemplates(current);
+        await renderList();
+      });
+
+      // 追加ボタン
+      injectBtn.addEventListener('click', async () => {
+        const price = priceInput.value.trim();
+        if (!price) {
+          priceInput.focus();
+          priceInput.style.borderColor = '#e53e3e';
+          setTimeout(() => { priceInput.style.borderColor = ''; }, 2000);
+          return;
+        }
+
+        injectBtn.disabled = true;
+        injectBtn.textContent = '追加中...';
+
+        try {
+          const result = await chrome.tabs.sendMessage(tab.id, {
+            action: 'injectVariation',
+            name: tmpl.name,
+            price,
+          });
+
+          if (result && result.success) {
+            const fileInfo = result.filesSelected > 0
+              ? ` (${result.filesSelected}件選択)`
+              : '';
+            injectBtn.textContent = '✅ 完了' + fileInfo;
+          } else {
+            injectBtn.textContent = '❌ 失敗';
+          }
+        } catch {
+          injectBtn.textContent = '❌ エラー';
+        }
+
+        setTimeout(() => {
+          injectBtn.disabled = false;
+          injectBtn.textContent = '追加';
+        }, 2000);
+      });
+
+      // 削除ボタン
+      deleteBtn.addEventListener('click', async () => {
+        const current = await loadTemplates();
+        const updated = current.filter(t => t.id !== tmpl.id);
+        await saveTemplates(updated);
+        await renderList();
+      });
+    });
+  }
+
+  // 新規テンプレート追加
+  addBtn.addEventListener('click', async () => {
+    const name = newNameInput.value.trim();
+    if (!name) return;
+
+    const templates = await loadTemplates();
+    templates.push({
+      id: Date.now().toString(),
+      name,
+    });
+    await saveTemplates(templates);
+    newNameInput.value = '';
+    await renderList();
+  });
+
+  await renderList();
+
+  // storage変更監視
+  chrome.storage.onChanged.addListener((changes) => {
+    if (changes[VARIATION_TEMPLATES_KEY]) {
+      renderList();
+    }
+  });
+}
+
+// ===== 段落テンプレート機能 =====
+
+const PARAGRAPH_TEMPLATES_KEY = 'booth-ext-paragraph-templates';
+
+async function initParagraphSection(tab) {
+  const section = document.getElementById('paragraph-section');
+  const listEl = document.getElementById('paragraph-list');
+  const emptyEl = document.getElementById('paragraph-empty');
+  const addBtn = document.getElementById('paragraph-add-btn');
+  const newTitleInput = document.getElementById('paragraph-new-title');
+  const newBodyInput = document.getElementById('paragraph-new-body');
+
+  section.classList.remove('hidden');
+
+  async function loadTemplates() {
+    return new Promise((resolve) => {
+      chrome.storage.local.get(PARAGRAPH_TEMPLATES_KEY, (result) => {
+        resolve(result[PARAGRAPH_TEMPLATES_KEY] || []);
+      });
+    });
+  }
+
+  async function saveTemplates(templates) {
+    return new Promise((resolve) => {
+      chrome.storage.local.set({ [PARAGRAPH_TEMPLATES_KEY]: templates }, resolve);
+    });
+  }
+
+  async function renderList() {
+    const templates = await loadTemplates();
+    listEl.innerHTML = '';
+
+    if (templates.length === 0) {
+      emptyEl.style.display = '';
+      return;
+    }
+    emptyEl.style.display = 'none';
+
+    templates.forEach((tmpl, idx) => {
+      const item = document.createElement('div');
+      item.className = 'paragraph-item';
+      item.dataset.id = tmpl.id;
+
+      // ヘッダー（折りたたみトグル + タイトル + ボタン）
+      const header = document.createElement('div');
+      header.className = 'paragraph-item-header';
+
+      const collapseIcon = document.createElement('span');
+      collapseIcon.className = 'paragraph-collapse-icon';
+      collapseIcon.textContent = '▶';
+
+      const titleSpan = document.createElement('span');
+      titleSpan.className = 'paragraph-item-title' + (tmpl.title ? '' : ' paragraph-item-title-empty');
+      titleSpan.textContent = tmpl.title || '（見出しなし）';
+
+      const actions = document.createElement('div');
+      actions.className = 'paragraph-item-actions';
+
+      // 並び替えボタン（▲▼）
+      const moveUpBtn = document.createElement('button');
+      moveUpBtn.className = 'paragraph-btn-move';
+      moveUpBtn.textContent = '▲';
+      moveUpBtn.title = '上に移動';
+      moveUpBtn.disabled = idx === 0;
+
+      const moveDownBtn = document.createElement('button');
+      moveDownBtn.className = 'paragraph-btn-move';
+      moveDownBtn.textContent = '▼';
+      moveDownBtn.title = '下に移動';
+      moveDownBtn.disabled = idx === templates.length - 1;
+
+      const injectBtn = document.createElement('button');
+      injectBtn.className = 'paragraph-btn-inject';
+      injectBtn.textContent = '追加';
+      injectBtn.title = 'この段落をページに追加';
+
+      const deleteBtn = document.createElement('button');
+      deleteBtn.className = 'paragraph-btn-delete';
+      deleteBtn.textContent = '削除';
+
+      actions.appendChild(moveUpBtn);
+      actions.appendChild(moveDownBtn);
+      actions.appendChild(injectBtn);
+      actions.appendChild(deleteBtn);
+
+      header.appendChild(collapseIcon);
+      header.appendChild(titleSpan);
+      header.appendChild(actions);
+
+      // 並び替えイベント
+      moveUpBtn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const current = await loadTemplates();
+        const i = current.findIndex(t => t.id === tmpl.id);
+        if (i <= 0) return;
+        [current[i - 1], current[i]] = [current[i], current[i - 1]];
+        await saveTemplates(current);
+        await renderList();
+      });
+
+      moveDownBtn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const current = await loadTemplates();
+        const i = current.findIndex(t => t.id === tmpl.id);
+        if (i < 0 || i >= current.length - 1) return;
+        [current[i], current[i + 1]] = [current[i + 1], current[i]];
+        await saveTemplates(current);
+        await renderList();
+      });
+
+      // ボディ（折りたたみ対象）
+      const bodyDiv = document.createElement('div');
+      bodyDiv.className = 'paragraph-item-body';
+      bodyDiv.style.display = 'none';
+
+      const bodyTitleLabel = document.createElement('div');
+      bodyTitleLabel.className = 'paragraph-item-body-label';
+      bodyTitleLabel.textContent = '見出し';
+      const bodyTitleText = document.createElement('div');
+      bodyTitleText.textContent = tmpl.title || '（なし）';
+
+      const bodyContentLabel = document.createElement('div');
+      bodyContentLabel.className = 'paragraph-item-body-label';
+      bodyContentLabel.textContent = '本文';
+      const bodyContentText = document.createElement('div');
+      bodyContentText.textContent = tmpl.body || '（なし）';
+
+      bodyDiv.appendChild(bodyTitleLabel);
+      bodyDiv.appendChild(bodyTitleText);
+      bodyDiv.appendChild(bodyContentLabel);
+      bodyDiv.appendChild(bodyContentText);
+
+      item.appendChild(header);
+      item.appendChild(bodyDiv);
+      listEl.appendChild(item);
+
+      // 折りたたみトグル（ヘッダークリック、ただしボタン以外）
+      header.addEventListener('click', (e) => {
+        if (e.target.closest('.paragraph-item-actions')) return;
+        const isOpen = bodyDiv.style.display !== 'none';
+        bodyDiv.style.display = isOpen ? 'none' : '';
+        collapseIcon.textContent = isOpen ? '▶' : '▼';
+      });
+
+      // 追加ボタン
+      injectBtn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        injectBtn.disabled = true;
+        injectBtn.textContent = '追加中...';
+
+        try {
+          const result = await chrome.tabs.sendMessage(tab.id, {
+            action: 'injectParagraph',
+            title: tmpl.title,
+            body: tmpl.body,
+          });
+
+          if (result && result.success) {
+            injectBtn.textContent = '✅ 追加しました';
+          } else {
+            injectBtn.textContent = '❌ 失敗';
+          }
+        } catch {
+          injectBtn.textContent = '❌ エラー';
+        }
+
+        setTimeout(() => {
+          injectBtn.disabled = false;
+          injectBtn.textContent = '追加';
+        }, 1500);
+      });
+
+      // 削除ボタン
+      deleteBtn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const current = await loadTemplates();
+        const updated = current.filter(t => t.id !== tmpl.id);
+        await saveTemplates(updated);
+        await renderList();
+      });
+    });
+  }
+
+  // 新規テンプレート追加
+  addBtn.addEventListener('click', async () => {
+    const title = newTitleInput.value.trim();
+    const body = newBodyInput.value.trim();
+
+    if (!title && !body) return;
+
+    const templates = await loadTemplates();
+    templates.push({
+      id: Date.now().toString(),
+      title,
+      body,
+    });
+    await saveTemplates(templates);
+    newTitleInput.value = '';
+    newBodyInput.value = '';
+    await renderList();
+  });
+
+  await renderList();
+
+  // storageの変更を監視して自動更新（ページ上の保存ボタンからの追加を反映）
+  chrome.storage.onChanged.addListener((changes) => {
+    if (changes[PARAGRAPH_TEMPLATES_KEY]) {
+      renderList();
+    }
+  });
 }
 
 // ===== バリエーション並び替え機能 =====
@@ -413,25 +816,14 @@ async function initSortSection(tab) {
   });
 
   textClearBtn.addEventListener('click', () => {
-    textInput.value = '';
     textOutput.textContent = '';
     textCopyBtn.style.display = 'none';
     textClearBtn.style.display = 'none';
   });
 
-  // テキスト入力の保存・復元
-  const storage = chrome.storage?.local;
-  if (storage) {
-    storage.get('sortTextInput', (data) => {
-      if (data.sortTextInput) textInput.value = data.sortTextInput;
-    });
-
-    let saveTimer = null;
-    textInput.addEventListener('input', () => {
-      clearTimeout(saveTimer);
-      saveTimer = setTimeout(() => {
-        storage.set({ sortTextInput: textInput.value });
-      }, 500);
-    });
-  }
+  // 入力側クリアボタン
+  const textInputClearBtn = document.getElementById('text-input-clear-btn');
+  textInputClearBtn.addEventListener('click', () => {
+    textInput.value = '';
+  });
 }
